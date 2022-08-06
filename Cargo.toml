@@ -1,0 +1,15 @@
+[package]
+name = "systembus-notifier"
+version = "0.1.1"
+authors = ["Elvyria <elvyria@tutanota.com>"]
+description = "system dbus notification redirector"
+repository = "https://github.com/Elvyria/systembus-notifier"
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+dbus = "0.9.6"
+
+[dependencies.nix]
+version = "0.24.2"
+features = ["user"]
