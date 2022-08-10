@@ -5,8 +5,6 @@
 Listener for D-Bus, that picks system notifications (`net.nuetzlich.SystemNotifications`) and redirects them to the user.  
 Unlike [systembus-notify](https://github.com/rfjakob/systembus-notify), written in rust and doesn't depend on `libsystemd`.
 
-**WARNING:** Currently in a pretty raw state, assumes that your user ID is `1000` and bus is located at `/run/user/1000/bus`
-
 ## Usage
 
 If your user doesn't somehow have access to system bus, you should run `systembus-notifier` as root.
@@ -31,5 +29,4 @@ cargo build --release
 
 ## TODO
 
-- [ ] Command line arguments.
 - [ ] Multiple users.

@@ -10,6 +10,10 @@ edition = "2021"
 [dependencies]
 dbus = "0.9.6"
 
+[dependencies.clap]
+version = "3.2.16"
+features = ["derive"]
+
 [dependencies.nix]
 version = "0.24.2"
 features = ["user"]

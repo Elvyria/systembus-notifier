@@ -3,24 +3,40 @@ use std::time::Duration;
 use dbus::arg::PropMap;
 use dbus::channel::{Sender, Channel};
 use dbus::{blocking::Connection, message::MatchRule, Message, channel::MatchingReceiver};
+
 use nix::unistd::{Uid, seteuid, geteuid};
+
+use clap::Parser;
 
 static APP_ICON: &str = "utilities-system-monitor";
 
-// TODO: Arguments
+#[derive(Parser)]
+#[clap(author, version, about, long_about = None)]
+struct Cli {
+    /// Owner of the bus
+    #[clap(short, long, default_value_t = 1000, value_parser)]
+    uid: u32,
+
+    /// Bus address [default: unix:path=/run/user/1000/bus]
+    #[clap(short, long, value_parser)]
+    address: Option<String>,
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    let cli = Cli::parse();
+
+    let uid: u32 = cli.uid;
+
+    let address = cli.address.unwrap_or_else(|| {
+        format!("unix:path=/run/user/{}/bus", uid)
+    });
 
     // TODO: log::debug!("Connecting to system bus...")
     let system_connection = Connection::new_system()?;
 
-    // $SUDO_UID can be used to guess if no arguments where specified
-    let uid: u32 = 1000;
-
-    // $XDG_RUNTIME_DIR / $DBUS_SESSION_BUS_ADDRESS can be used to guess if no arguments where specified
-    let address = "unix:path=/run/user/1000/bus";
-
     // TODO: log::debug!("Connecting to user bus...")
-    let user_connection = connect_address(address, uid)?;
+    let user_connection = connect_address(&address, uid)?;
 
     let rule = MatchRule::new()
         .with_type(dbus::MessageType::Signal)
@@ -45,6 +61,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // TODO: Pull out gently (i'm so so sorry if you see this)
     }
+
+    Ok(())
 }
 
 fn connect_address(address: &str, uid: u32) -> Result<Connection, Box<dyn std::error::Error>> {
@@ -54,7 +72,7 @@ fn connect_address(address: &str, uid: u32) -> Result<Connection, Box<dyn std::e
     let mut channel = Channel::open_private(address)?;
     channel.register()?;
 
-    seteuid(old_uid).expect("setting the effective group ID to ${uid}");
+    seteuid(old_uid).expect("setting the effective group ID to ${old_uid}");
 
     Ok(channel.into())
 }
