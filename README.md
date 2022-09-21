@@ -17,6 +17,9 @@ Can be installed with `cargo`:
 cargo install systembus-notifier
 ```
 
+### Package Managers
+* [xbps](https://github.com/Elvyria/voids-package-nightmare/tree/main/srcpkgs/systembus-notifier)
+
 ## Building
 
 To build this little thing, you'll need some [Rust](https://www.rust-lang.org/).
