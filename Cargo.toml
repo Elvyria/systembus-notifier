@@ -1,6 +1,6 @@
 [package]
 name = "systembus-notifier"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Elvyria <elvyria@tutanota.com>"]
 description = "system dbus notification redirector"
 repository = "https://github.com/Elvyria/systembus-notifier"
@@ -9,6 +9,8 @@ edition = "2021"
 
 [dependencies]
 dbus = "0.9.6"
+syslog = "6.0.1"
+log = "0.4.17"
 
 [dependencies.clap]
 version = "3.2.16"

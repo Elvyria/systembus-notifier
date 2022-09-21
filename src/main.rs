@@ -23,8 +23,17 @@ struct Cli {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     let cli = Cli::parse();
+
+    #[cfg(not(debug_assertions))]
+    let log_level = log::LevelFilter::Error;
+
+    #[cfg(debug_assertions)]
+    let log_level = log::LevelFilter::Debug;
+
+    if let Err(e) = connect_syslog(log_level) {
+        eprintln!("Failed to connect to syslog. {}", e);
+    }
 
     let uid: u32 = cli.uid;
 
@@ -32,10 +41,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         format!("unix:path=/run/user/{}/bus", uid)
     });
 
-    // TODO: log::debug!("Connecting to system bus...")
+    log::debug!("Connecting to system bus...");
     let system_connection = Connection::new_system()?;
 
-    // TODO: log::debug!("Connecting to user bus...")
+    log::debug!("Connecting to user bus at `{}` with user id {}", &address, uid);
     let user_connection = connect_address(&address, uid)?;
 
     let rule = MatchRule::new()
@@ -56,11 +65,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     loop {
         if let Err(e) = system_connection.process(timeout) {
-            eprintln!("{}", e);
+            log::error!("Couldn't process incoming message. {}", e);
         }
-
-        // TODO: Pull out gently (i'm so so sorry if you see this)
     }
+
+    Ok(())
+}
+
+fn connect_syslog(level: log::LevelFilter) -> Result<(), Box<dyn std::error::Error>> {
+    let formatter = syslog::Formatter3164 {
+        facility: syslog::Facility::LOG_DAEMON,
+        hostname: None,
+        process:  String::from("systembus-notifier"),
+        pid:      std::process::id(),
+    };
+
+    let logger = syslog::unix(formatter)?;
+
+    log::set_boxed_logger(Box::new(syslog::BasicLogger::new(logger)))
+        .map(|()| log::set_max_level(level))?;
 
     Ok(())
 }
@@ -87,7 +110,7 @@ fn redirect<S>(msg: &Message, sender: &S) -> Result<(), Box<dyn std::error::Erro
 
         let body = arg_iter.read::<String>().unwrap_or_default();
 
-        // TODO: log::debug!("{summary} {body}")
+        log::debug!("System bus got a new notification: `{}` ; `{}`", summary, body);
 
         notify(sender, &summary, &body)?
     }
